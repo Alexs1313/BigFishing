@@ -9,6 +9,7 @@ export const useStore = () => {
 
 export const StoreProvider = ({children}) => {
   const [userData, setUserData] = useState([]);
+  const [userNotes, setUserNotes] = useState([]);
 
   const saveUserData = async data => {
     try {
@@ -47,7 +48,54 @@ export const StoreProvider = ({children}) => {
     console.log('remove');
   };
 
-  const value = {saveUserData, userData, getUserData};
+  // User Notes
+
+  const saveUserNotes = async data => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('notes');
+      let parced = jsonValue !== null ? JSON.parse(jsonValue) : [];
+
+      const userNotes = [...parced, data];
+      await AsyncStorage.setItem('notes', JSON.stringify(userNotes));
+      console.log('saved');
+    } catch (e) {
+      console.error('Failed', e);
+    }
+  };
+
+  const getUserNotes = async () => {
+    try {
+      const savedData = await AsyncStorage.getItem('notes');
+      const parsed = JSON.parse(savedData);
+
+      if (parsed != null) {
+        setUserNotes(parsed);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const removeUserNote = async selectedNote => {
+    const jsonValue = await AsyncStorage.getItem('notes');
+    let data = jsonValue != null ? JSON.parse(jsonValue) : [];
+    const filtered = data.filter(item => item.id !== selectedNote);
+
+    setUserNotes(filtered);
+    await AsyncStorage.setItem('notes', JSON.stringify(filtered));
+
+    console.log('remove');
+  };
+
+  const value = {
+    saveUserData,
+    userData,
+    getUserData,
+    saveUserNotes,
+    getUserNotes,
+    userNotes,
+    removeUserNote,
+  };
 
   return (
     <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

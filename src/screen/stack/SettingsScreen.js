@@ -3,6 +3,7 @@ import {
   ImageBackground,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -16,20 +17,27 @@ import {launchImageLibrary} from 'react-native-image-picker';
 import {useStore} from '../../store/context';
 
 const SettingsScreen = () => {
+  const [changeButton, setChangeButton] = useState(false);
   const [changePhoto, setChangePhoto] = useState(false);
+  const [isEnabledMusic, setIsEnabledMusic] = useState(false);
+  const [isEnabledNotifications, setIsEnabledMusicNotifications] =
+    useState(false);
   const {saveUserData, userData, getUserData} = useStore();
+
   const [user, setUser] = useState({
     id: Date.now(),
-    nickname: '',
-    image: '',
+    nickname: userData.nickname,
+    image: userData.image,
   });
   const navigation = useNavigation();
+
+  const toggleMusic = () => setIsEnabledMusic(previousState => !previousState);
+  const toggleNotifications = () =>
+    setIsEnabledMusicNotifications(previousState => !previousState);
 
   useEffect(() => {
     getUserData();
   }, []);
-
-  console.log('userDataSet', userData);
 
   let options = {
     storageOptions: {
@@ -43,14 +51,15 @@ const SettingsScreen = () => {
     launchImageLibrary(options, response => {
       if (response.didCancel) return;
 
-      setUserData(prev => ({...prev, image: response.assets[0].uri}));
+      setUser(prev => ({...prev, image: response.assets[0].uri}));
+
       setChangePhoto(true);
     });
   };
 
   const handleSaveData = () => {
-    saveUserData(userData);
-    navigation.navigate('TabNav');
+    saveUserData(user);
+    setChangeButton(true);
   };
 
   const isDisabled = userData.nickname === '' || userData.image === '';
@@ -61,19 +70,19 @@ const SettingsScreen = () => {
         <LinearGradient
           colors={['#3F3782', '#AE583D']}
           style={styles.headerContainer}>
-          <TouchableOpacity
-            style={{flexDirection: 'row', justifyContent: 'space-between'}}
-            activeOpacity={0.7}
-            onPress={() => navigation.goBack()}>
-            <View style={{flexDirection: 'row'}}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              activeOpacity={0.7}
+              style={{flexDirection: 'row'}}>
               <Image source={require('../../assets/icons/back.png')} />
               <Text style={styles.headerBtnText}>Back</Text>
-            </View>
+            </TouchableOpacity>
             <Image
               source={require('../../assets/icons/widget.png')}
               tintColor={'#fff'}
             />
-          </TouchableOpacity>
+          </View>
         </LinearGradient>
         <View
           style={{
@@ -85,7 +94,7 @@ const SettingsScreen = () => {
           {userData.image !== '' && (
             <View>
               <Image
-                source={{uri: userData.image}}
+                source={{uri: user.image}}
                 style={{width: 141, height: 141, borderRadius: 99}}
               />
               <TouchableOpacity
@@ -98,46 +107,96 @@ const SettingsScreen = () => {
           )}
           {userData.image === '' && (
             <View>
-              <View style={styles.userImgContainer}></View>
-              <TouchableOpacity
-                onPress={() => imagePicker()}
-                activeOpacity={0.7}
-                style={styles.addBtnContainer}>
-                <Image source={require('../../assets/icons/add.png')} />
-              </TouchableOpacity>
+              {changePhoto ? (
+                <View>
+                  <Image
+                    source={{uri: user.image}}
+                    style={{width: 141, height: 141, borderRadius: 99}}
+                  />
+                  <TouchableOpacity
+                    onPress={() => imagePicker()}
+                    activeOpacity={0.7}
+                    style={styles.addBtnContainer}>
+                    <Image source={require('../../assets/icons/add.png')} />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View>
+                  <View style={styles.userImgContainer}></View>
+                  <TouchableOpacity
+                    onPress={() => imagePicker()}
+                    activeOpacity={0.7}
+                    style={styles.addBtnContainer}>
+                    <Image source={require('../../assets/icons/add.png')} />
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           )}
         </View>
         <View style={{marginHorizontal: 16, marginTop: 35}}>
           <Text style={styles.sectionTitle}>Nickname</Text>
-          <TextInput
-            style={styles.input}
-            maxLength={20}
-            value={userData.nickname}
-            onChangeText={value =>
-              setUser(prev => ({...prev, nickname: value}))
-            }
-          />
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+            <TextInput
+              style={styles.input}
+              maxLength={20}
+              value={user.nickname}
+              onChangeText={value =>
+                setUser(prev => ({...prev, nickname: value}))
+              }
+            />
+
+            {changeButton ? (
+              <View
+                activeOpacity={0.7}
+                style={[styles.editBtn, {backgroundColor: '#34C759'}]}>
+                <Image source={require('../../assets/icons/edited.png')} />
+              </View>
+            ) : (
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={styles.editBtn}
+                onPress={() => handleSaveData()}>
+                <Image source={require('../../assets/icons/edit.png')} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        <View style={{marginHorizontal: 16, marginTop: 35}}>
+          <View style={styles.settingsWrap}>
+            <Text style={styles.settingsText}>Music</Text>
+            <Switch
+              onValueChange={toggleMusic}
+              value={isEnabledMusic}
+              style={{transform: [{scaleX: 1.4}, {scaleY: 1.4}]}}
+              trackColor={{true: '#FBE30A', false: 'grey'}}
+              thumbColor={'#fff'}
+            />
+          </View>
+          <View style={styles.settingsWrap}>
+            <Text style={styles.settingsText}>Notifications</Text>
+            <Switch
+              onValueChange={toggleNotifications}
+              value={isEnabledNotifications}
+              style={{transform: [{scaleX: 1.4}, {scaleY: 1.4}]}}
+              trackColor={{true: '#FBE30A', false: 'grey'}}
+              thumbColor={'#fff'}
+            />
+          </View>
+          <View style={styles.settingsWrap}>
+            <Text style={styles.settingsText}>Reset the App</Text>
+            <TouchableOpacity>
+              <Image source={require('../../assets/icons/reset.png')} />
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
-      <View style={{marginHorizontal: 24}}>
-        <TouchableOpacity
-          disabled={isDisabled}
-          activeOpacity={0.7}
-          onPress={() => handleSaveData()}
-          style={{
-            bottom: 40,
-            width: '100%',
-          }}>
-          <LinearGradient
-            colors={
-              isDisabled ? ['#CCCCCC', '#CCCCCC'] : ['#FD0404', '#FBE30A']
-            }
-            style={{padding: 15, borderRadius: 16, alignItems: 'center'}}>
-            <Text style={styles.btnText}>Save</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
     </Layout>
   );
 };
@@ -186,6 +245,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#fff',
   },
+  settingsText: {fontSize: 24, fontWeight: '500', color: '#fff'},
   headerBtnText: {
     fontSize: 16,
     fontWeight: '400',
@@ -197,12 +257,25 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingLeft: 20,
     paddingRight: 20,
-    height: 65,
+    height: 51,
     fontSize: 17,
     fontWeight: '400',
     color: '#fff',
-    width: '100%',
-    marginBottom: 5,
+    width: '80%',
+  },
+  editBtn: {
+    width: 72,
+    height: 56,
+    backgroundColor: '#3BCFD9',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  settingsWrap: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 37,
   },
 });
 

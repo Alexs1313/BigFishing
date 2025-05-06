@@ -1,15 +1,80 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import Layout from '../../components/Layout';
+import {tips} from '../../data/tips';
+import {useEffect, useState} from 'react';
+import {useStore} from '../../store/context';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
+import {Swipeable} from 'react-native-gesture-handler';
+import LinearGradient from 'react-native-linear-gradient';
 
 const Game = () => {
+  const {userNotes} = useStore();
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
+
+  console.log('userNotes', userNotes);
+
+  useEffect(() => {}, [isFocused]);
+
   return (
-    <View style={styles.container}>
-      <Text>Home</Text>
-    </View>
+    <Layout>
+      <ScrollView>
+        <View style={{marginHorizontal: 16, marginTop: 80}}>
+          <View style={{}}>
+            <Text style={styles.title}>
+              Think you're a fishing expert? Let's find out!
+            </Text>
+            <Text style={[styles.title, {fontWeight: '400'}]}>
+              Answer fun and challenging questions about fishing techniques,
+              fish species, bait, and more. Improve your knowledge and become a
+              true angler!
+            </Text>
+          </View>
+        </View>
+        <View style={{marginHorizontal: 24}}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('Quiz')}
+            style={{
+              width: '100%',
+              marginTop: 40,
+            }}>
+            <LinearGradient
+              colors={['#FD0404', '#FBE30A']}
+              style={{padding: 15, borderRadius: 16, alignItems: 'center'}}>
+              <Text style={styles.btnText}>Play</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </Layout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, justifyContent: 'center', alignItems: 'center'},
+  title: {
+    fontSize: 24,
+    fontWeight: '500',
+    color: '#FFFFFF',
+    marginBottom: 20,
+  },
+  btnText: {fontSize: 18, fontWeight: '400', color: '#fff'},
+
+  itemContainer: {
+    backgroundColor: '#3F3782',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    marginLeft: 16,
+    marginBottom: 10,
+    borderRadius: 32,
+  },
 });
 
 export default Game;

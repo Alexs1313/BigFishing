@@ -3,18 +3,19 @@ import Layout from '../../components/Layout';
 import {tips} from '../../data/tips';
 import {useEffect, useState} from 'react';
 import {useStore} from '../../store/context';
-import {useNavigation} from '@react-navigation/native';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
 
 const Home = () => {
   const [isOpenEnvelope, setIsOpenEnvelope] = useState(false);
   const {userData, getUserData} = useStore();
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
 
   console.log('userData', userData);
 
   useEffect(() => {
     getUserData();
-  }, []);
+  }, [isFocused]);
 
   const randomNumber = Math.floor(Math.random() * (19 - 1 + 1) + 1);
 
