@@ -1,7 +1,5 @@
 import {
-  Alert,
   Image,
-  ImageBackground,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,11 +8,9 @@ import {
   View,
 } from 'react-native';
 import Layout from '../../components/Layout';
-import GradientText from '../../components/GradientText';
 import LinearGradient from 'react-native-linear-gradient';
 import {useNavigation} from '@react-navigation/native';
 import {useState} from 'react';
-import {launchImageLibrary} from 'react-native-image-picker';
 import {useStore} from '../../store/context';
 
 // Get current date
@@ -30,7 +26,6 @@ month = month < 10 ? '0' + month : month;
 const formattedDate = `${day}.${month}.${year}`;
 
 const MarkLocation = () => {
-  const [changePhoto, setChangePhoto] = useState(false);
   const [saved, setSaved] = useState(false);
   const {saveUserNotes, userNotes} = useStore();
   const [locationData, setlocationData] = useState({
@@ -55,28 +50,28 @@ const MarkLocation = () => {
 
   const {spotName, waterType, fishType, notes} = locationData;
 
-  const handleGoBack = () => {
-    if (title !== '' || (description !== '' && !saved)) {
-      Alert.alert(
-        'Wait! You’ve Got Unsaved Changes',
-        'Looks like you’ve made some updates. If you leave now, your changes will be lost',
-        [
-          {
-            text: 'Cancel',
-            onPress: () => console.log('Cancel'),
-            style: 'cancel',
-          },
-          {
-            text: 'Leave',
-            onPress: () => navigation.goBack(),
-          },
-        ],
-        {cancelable: false},
-      );
-    } else {
-      navigation.goBack();
-    }
-  };
+  //   const handleGoBack = () => {
+  //     if (title !== '' || (description !== '' && !saved)) {
+  //       Alert.alert(
+  //         'Wait! You’ve Got Unsaved Changes',
+  //         'Looks like you’ve made some updates. If you leave now, your changes will be lost',
+  //         [
+  //           {
+  //             text: 'Cancel',
+  //             onPress: () => console.log('Cancel'),
+  //             style: 'cancel',
+  //           },
+  //           {
+  //             text: 'Leave',
+  //             onPress: () => navigation.goBack(),
+  //           },
+  //         ],
+  //         {cancelable: false},
+  //       );
+  //     } else {
+  //       navigation.goBack();
+  //     }
+  //   };
 
   const isDisabled =
     spotName.trim() === '' ||
