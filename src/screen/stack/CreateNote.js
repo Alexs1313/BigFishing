@@ -16,6 +16,7 @@ import {useNavigation} from '@react-navigation/native';
 import {useState} from 'react';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {useStore} from '../../store/context';
+import Toast from 'react-native-toast-message';
 
 // Get current date
 const today = new Date();
@@ -32,7 +33,7 @@ const formattedDate = `${day}.${month}.${year}`;
 const CreateNote = () => {
   const [changePhoto, setChangePhoto] = useState(false);
   const [saved, setSaved] = useState(false);
-  const {saveUserNotes, userNotes} = useStore();
+  const {saveUserNotes, isEnabledNotifications} = useStore();
   const [userData, setUserData] = useState({
     id: Date.now(),
     title: '',
@@ -46,6 +47,11 @@ const CreateNote = () => {
   const handleSaveData = () => {
     saveUserNotes(userData);
     setSaved(true);
+    if (isEnabledNotifications) {
+      Toast.show({
+        text1: 'Reminder created successfully!',
+      });
+    }
     setTimeout(() => {
       navigation.goBack();
     }, 300);

@@ -1,4 +1,11 @@
-import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import Layout from '../../components/Layout';
 import {tips} from '../../data/tips';
 import {useEffect, useState} from 'react';
@@ -7,77 +14,105 @@ import {useIsFocused, useNavigation} from '@react-navigation/native';
 
 const Home = () => {
   const [isOpenEnvelope, setIsOpenEnvelope] = useState(false);
-  const {userData, getUserData} = useStore();
+  const {userData, getUserData, locations, getLocation} = useStore();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
 
-  console.log('userData', userData);
-
   useEffect(() => {
     getUserData();
+    getLocation();
   }, [isFocused]);
 
   const randomNumber = Math.floor(Math.random() * (19 - 1 + 1) + 1);
 
   return (
     <Layout>
-      <View style={{marginHorizontal: 16, marginTop: 80}}>
-        <View style={styles.headerContainer}>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            {userData.image === '' ? (
-              <View style={styles.userImage}></View>
-            ) : (
-              <Image
-                source={{uri: userData.image}}
-                style={[styles.userImage, {backgroundColor: null}]}
-              />
-            )}
-            <View style={{marginLeft: 10}}>
-              <Text style={styles.welcomeText}>Welcome back,</Text>
-
-              {userData.nickname === '' ? (
-                <Text style={styles.usernameText}>User</Text>
+      <ScrollView>
+        <View style={{marginHorizontal: 16, marginTop: 80}}>
+          <View style={styles.headerContainer}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              {userData.image === '' || userData.length === 0 ? (
+                <View style={styles.userImage}></View>
               ) : (
-                <Text style={styles.usernameText}>{userData.nickname}</Text>
+                <Image
+                  source={{uri: userData.image}}
+                  style={[styles.userImage, {backgroundColor: null}]}
+                />
               )}
+              <View style={{marginLeft: 10}}>
+                <Text style={styles.welcomeText}>Welcome back,</Text>
+
+                {userData.nickname === '' || userData.length === 0 ? (
+                  <Text style={styles.usernameText}>User</Text>
+                ) : (
+                  <Text style={styles.usernameText}>{userData.nickname}</Text>
+                )}
+              </View>
+            </View>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('SettingsScreen')}>
+              <Image source={require('../../assets/icons/widget.png')} />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.title}>Tip of the Day 🎯</Text>
+          <View style={{}}>
+            {isOpenEnvelope ? (
+              <View>
+                <View style={{alignItems: 'center'}}>
+                  <Image
+                    source={require('../../assets/img/openedEnvelope.png')}
+                  />
+                </View>
+                <View style={styles.envelopeContainer}>
+                  <Text>{tips[randomNumber]}</Text>
+                </View>
+              </View>
+            ) : (
+              <View style={{alignItems: 'center'}}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => setIsOpenEnvelope(true)}>
+                  <Image source={require('../../assets/img/envelope.png')} />
+                </TouchableOpacity>
+                <Text style={[styles.title, {marginBottom: 30, opacity: 0.4}]}>
+                  Tap on the envelope
+                </Text>
+              </View>
+            )}
+          </View>
+          <Text style={[styles.title, {textAlign: 'left', marginBottom: 24}]}>
+            Recent Locations 📍
+          </Text>
+          <View>
+            <View style={{marginBottom: 120}}>
+              {[...locations].slice(0, 2).map(location => (
+                <View
+                  activeOpacity={0.9}
+                  onPress={() => navigation.navigate('ChickenCard', location)}
+                  style={styles.itemContainer}
+                  key={location.id}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}>
+                    <Text style={styles.titleText}>{location.spotName}</Text>
+                    <Text style={styles.dateText}>{location.date}</Text>
+                  </View>
+                  <Text style={styles.secondaryText}>
+                    🌊 {location.waterType}
+                  </Text>
+                  <Text style={styles.secondaryText}>
+                    🐟 {location.fishType}
+                  </Text>
+                  <Text style={styles.notesText}>{location.notes}</Text>
+                </View>
+              ))}
             </View>
           </View>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate('SettingsScreen')}>
-            <Image source={require('../../assets/icons/widget.png')} />
-          </TouchableOpacity>
         </View>
-        <Text style={styles.title}>Tip of the Day 🎯</Text>
-        <View style={{}}>
-          {isOpenEnvelope ? (
-            <View>
-              <View style={{alignItems: 'center'}}>
-                <Image
-                  source={require('../../assets/img/openedEnvelope.png')}
-                />
-              </View>
-              <View style={styles.envelopeContainer}>
-                <Text>{tips[randomNumber]}</Text>
-              </View>
-            </View>
-          ) : (
-            <View style={{alignItems: 'center'}}>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => setIsOpenEnvelope(true)}>
-                <Image source={require('../../assets/img/envelope.png')} />
-              </TouchableOpacity>
-              <Text style={[styles.title, {marginBottom: 30, opacity: 0.4}]}>
-                Tap on the envelope
-              </Text>
-            </View>
-          )}
-        </View>
-        <Text style={[styles.title, {textAlign: 'left'}]}>
-          Recent Locations 📍
-        </Text>
-      </View>
+      </ScrollView>
     </Layout>
   );
 };
@@ -125,6 +160,32 @@ const styles = StyleSheet.create({
     bottom: -20,
     borderRadius: 16,
   },
+  itemContainer: {
+    backgroundColor: '#3F3782',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    marginBottom: 10,
+    borderRadius: 32,
+  },
+  titleText: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  secondaryText: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#fff',
+    opacity: 0.8,
+    marginTop: 6,
+  },
+  dateText: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: '#fff',
+  },
+  notesText: {fontSize: 14, fontWeight: '600', color: '#fff', marginTop: 12},
 });
 
 export default Home;

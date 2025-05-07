@@ -50,7 +50,7 @@ const CreateProfile = () => {
     navigation.navigate('TabNav');
   };
 
-  const isDisabled = userData.nickname === '' || userData.image === '';
+  const isDisabled = userData.nickname.trim() === '' || userData.image === '';
 
   return (
     <Layout>
@@ -88,7 +88,7 @@ const CreateProfile = () => {
             </View>
           )}
         </View>
-        <View style={{marginHorizontal: 16, marginTop: 35}}>
+        <View style={{marginHorizontal: 16, marginTop: 35, marginBottom: 80}}>
           <Text style={styles.sectionTitle}>Nickname</Text>
           <TextInput
             style={styles.input}

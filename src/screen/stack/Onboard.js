@@ -11,9 +11,26 @@ import Layout from '../../components/Layout';
 import GradientText from '../../components/GradientText';
 import LinearGradient from 'react-native-linear-gradient';
 import {useNavigation} from '@react-navigation/native';
+import {useStore} from '../../store/context';
 
 const Onboard = () => {
   const navigation = useNavigation();
+  const {userData} = useStore();
+
+  console.log('userdata', userData);
+
+  const handleStart = () => {
+    if (userData.image !== '' && userData.nickname !== '') {
+      navigation.navigate('TabNav');
+    }
+    if (
+      userData.image === '' ||
+      userData.nickname === '' ||
+      userData.length === 0
+    ) {
+      navigation.navigate('CreateProfile');
+    }
+  };
 
   return (
     <ImageBackground
@@ -21,28 +38,38 @@ const Onboard = () => {
       style={styles.container}>
       <ScrollView>
         <View
-          style={{alignItems: 'center', marginTop: 70, marginHorizontal: 24}}>
+          style={{
+            alignItems: 'center',
+            marginTop: 70,
+            marginHorizontal: 24,
+            top: 20,
+          }}>
           <Image
             source={require('../../assets/img/onboardMan.png')}
             style={styles.image}
           />
-          <View style={{position: 'absolute', bottom: -235}}>
-            <GradientText colors={['#FD0404', '#FBE30A']} style={styles.title}>
-              Welcom to Splash & Track: Big Fishing
-            </GradientText>
-            <Text style={styles.secondaryText}>
-              Track your fishing adventures, log your catches, mark the best
-              fishing spots, and challenge yourself with fun fishing quizzes and
-              games. Stay on top of your fishing journey with smart tools and
-              insights!
-            </Text>
-          </View>
+        </View>
+        <View
+          style={{
+            marginBottom: 130,
+            alignItems: 'center',
+            marginHorizontal: 24,
+          }}>
+          <GradientText colors={['#FD0404', '#FBE30A']} style={styles.title}>
+            Welcom to Splash & Track: Big Fishing
+          </GradientText>
+          <Text style={styles.secondaryText}>
+            Track your fishing adventures, log your catches, mark the best
+            fishing spots, and challenge yourself with fun fishing quizzes and
+            games. Stay on top of your fishing journey with smart tools and
+            insights!
+          </Text>
         </View>
       </ScrollView>
       <View style={{marginHorizontal: 24}}>
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => navigation.navigate('CreateProfile')}
+          onPress={() => handleStart()}
           style={{
             position: 'absolute',
             bottom: 40,
@@ -65,7 +92,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '400',
     fontFamily: 'Chango-Regular',
-    textAlign: 'center',
+    // textAlign: 'center',
   },
   btnText: {fontSize: 18, fontWeight: '400', color: '#fff'},
   secondaryText: {

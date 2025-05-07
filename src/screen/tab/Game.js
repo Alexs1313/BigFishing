@@ -1,5 +1,4 @@
 import {
-  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -7,21 +6,11 @@ import {
   View,
 } from 'react-native';
 import Layout from '../../components/Layout';
-import {tips} from '../../data/tips';
-import {useEffect, useState} from 'react';
-import {useStore} from '../../store/context';
-import {useIsFocused, useNavigation} from '@react-navigation/native';
-import {Swipeable} from 'react-native-gesture-handler';
+import {useNavigation} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 
 const Game = () => {
-  const {userNotes} = useStore();
   const navigation = useNavigation();
-  const isFocused = useIsFocused();
-
-  console.log('userNotes', userNotes);
-
-  useEffect(() => {}, [isFocused]);
 
   return (
     <Layout>
@@ -45,6 +34,7 @@ const Game = () => {
             style={{
               width: '100%',
               marginTop: 40,
+              marginBottom: 140,
             }}>
             <LinearGradient
               colors={['#FD0404', '#FBE30A']}
@@ -66,7 +56,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   btnText: {fontSize: 18, fontWeight: '400', color: '#fff'},
-
   itemContainer: {
     backgroundColor: '#3F3782',
     paddingVertical: 16,

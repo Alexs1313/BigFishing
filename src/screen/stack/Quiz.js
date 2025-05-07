@@ -146,7 +146,7 @@ const Quiz = () => {
           <Text style={styles.questionText}>
             {questions[currentQuestionIdx].question}
           </Text>
-          <View style={{gap: 16, marginTop: 36}}>
+          <View style={{gap: 16, marginTop: 36, marginBottom: 30}}>
             {questions[currentQuestionIdx].options.map(option => (
               <TouchableOpacity
                 key={option}

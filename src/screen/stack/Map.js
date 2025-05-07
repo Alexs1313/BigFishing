@@ -1,22 +1,18 @@
 import {
   Alert,
   Image,
-  ImageBackground,
-  ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import Layout from '../../components/Layout';
-import GradientText from '../../components/GradientText';
 import LinearGradient from 'react-native-linear-gradient';
 import {useNavigation} from '@react-navigation/native';
-import {useState} from 'react';
-import {launchImageLibrary} from 'react-native-image-picker';
+import {useEffect, useState} from 'react';
 import {useStore} from '../../store/context';
 import MapView, {Marker} from 'react-native-maps';
+import Orientation from 'react-native-orientation-locker';
 
 // Get current date
 const today = new Date();
@@ -31,9 +27,8 @@ month = month < 10 ? '0' + month : month;
 const formattedDate = `${day}.${month}.${year}`;
 
 const Map = () => {
-  const [changePhoto, setChangePhoto] = useState(false);
   const [saved, setSaved] = useState(false);
-  const {saveUserNotes, userNotes} = useStore();
+  const {getLocation, currentLocation, setCurrentLocation} = useStore();
   const [userData, setUserData] = useState({
     id: Date.now(),
     title: '',
@@ -41,22 +36,51 @@ const Map = () => {
     date: formattedDate,
   });
   const navigation = useNavigation();
-  const [markers, setMarkers] = useState([]);
   const [marker, setMarker] = useState(null);
+  const [time, setTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [startSession, setStartSession] = useState(false);
+
+  useEffect(() => {
+    Orientation.lockToPortrait();
+  }, []);
+
+  useEffect(() => {
+    getLocation();
+  }, []);
+
+  useEffect(() => {
+    let timer;
+    if (isRunning) {
+      timer = setInterval(() => {
+        setTime(prevTime => prevTime + 1);
+      }, 1000);
+    } else {
+      clearInterval(timer);
+    }
+    return () => clearInterval(timer);
+  }, [isRunning]);
+
+  const formatTime = totalSeconds => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(
+      2,
+      '0',
+    )}`;
+  };
+
+  const handleToggleTimer = () => {
+    setIsRunning(!isRunning), setStartSession(!startSession);
+  };
+
+  const handleStopTimer = () => {
+    setIsRunning(false), setStartSession(false), setTime(0);
+  };
 
   const handleMapPress = event => {
     const {coordinate} = event.nativeEvent;
     setMarker(coordinate);
-  };
-
-  console.log('userdata', userData);
-
-  const handleSaveData = () => {
-    saveUserNotes(userData);
-    setSaved(true);
-    setTimeout(() => {
-      navigation.goBack();
-    }, 300);
   };
 
   const {title, description} = userData;
@@ -81,10 +105,9 @@ const Map = () => {
       );
     } else {
       navigation.goBack();
+      setCurrentLocation([]);
     }
   };
-
-  const isDisabled = title.trim() === '' || description.trim() === '';
 
   return (
     <Layout>
@@ -100,13 +123,20 @@ const Map = () => {
           }}>
           {marker && (
             <Marker coordinate={marker}>
-              <Image
+              {/* <Image
                 source={require('../../assets/icons/customMarker.png')}
                 style={styles.markerImage}
-              />
+              /> */}
             </Marker>
           )}
         </MapView>
+        {startSession && (
+          <View style={{alignItems: 'center'}}>
+            <View style={styles.timerContainer}>
+              <Text style={styles.timerText}>{formatTime(time)}</Text>
+            </View>
+          </View>
+        )}
       </View>
 
       <LinearGradient
@@ -122,34 +152,76 @@ const Map = () => {
           </TouchableOpacity>
         </View>
       </LinearGradient>
-      {/* <ScrollView>
-        <View style={{marginHorizontal: 16, marginTop: 24}}></View>
-      </ScrollView> */}
+
       <LinearGradient
         colors={['#3F3782', '#AE583D']}
         style={styles.footerContainer}>
         <View style={{marginHorizontal: 14}}>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={styles.addBtnContainer}
-            onPress={() => navigation.navigate('MarkLocation')}>
-            <Text style={styles.addBtnText}>Mark location</Text>
-            <Image source={require('../../assets/icons/marker.png')} />
-          </TouchableOpacity>
+          {!startSession && (
+            <View>
+              {currentLocation.spotName === '' ||
+              currentLocation.length === 0 ? (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={styles.addBtnContainer}
+                  onPress={() => navigation.navigate('MarkLocation')}>
+                  <Text style={styles.addBtnText}>Mark location</Text>
 
-          <TouchableOpacity
-            disabled={isDisabled}
-            activeOpacity={0.7}
-            onPress={() => handleSaveData()}
-            style={{
-              width: '100%',
-            }}>
-            <LinearGradient
-              colors={['#FD0404', '#FBE30A']}
-              style={{padding: 15, borderRadius: 16, alignItems: 'center'}}>
-              <Text style={styles.btnText}>Fishing session</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+                  <Image source={require('../../assets/icons/marker.png')} />
+                </TouchableOpacity>
+              ) : (
+                <View
+                  activeOpacity={0.7}
+                  style={[
+                    styles.addBtnContainer,
+                    {justifyContent: 'center', backgroundColor: '#34C759'},
+                  ]}>
+                  <Text style={styles.addBtnText}>
+                    {currentLocation.spotName}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {startSession && (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={[styles.addBtnContainer, {backgroundColor: '#34C759'}]}
+              onPress={() => {
+                navigation.navigate('FishingSession', time),
+                  setIsRunning(false);
+              }}>
+              <Text style={styles.addBtnText}>Catch</Text>
+
+              <Image source={require('../../assets/icons/add.png')} />
+            </TouchableOpacity>
+          )}
+
+          {startSession ? (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={[
+                styles.addBtnContainer,
+                {backgroundColor: '#F46C5C', justifyContent: 'center'},
+              ]}
+              onPress={() => handleStopTimer()}>
+              <Text style={styles.addBtnText}>End fishing</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => handleToggleTimer()}
+              style={{
+                width: '100%',
+              }}>
+              <LinearGradient
+                colors={['#FD0404', '#FBE30A']}
+                style={styles.gradientBtn}>
+                <Text style={styles.btnText}>Fishing session</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
         </View>
       </LinearGradient>
     </Layout>
@@ -190,6 +262,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     position: 'absolute',
     bottom: 0,
+    width: '100%',
   },
   headerBtnText: {
     fontSize: 16,
@@ -208,6 +281,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '400',
     color: '#fff',
+  },
+  timerText: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  timerContainer: {
+    position: 'absolute',
+    bottom: 200,
+    paddingVertical: 24,
+    paddingHorizontal: 60,
+    backgroundColor: '#3F3782',
+    borderRadius: 16,
   },
   addBtnContainer: {
     paddingVertical: 13,
@@ -249,6 +335,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     width: '100%',
     marginBottom: 16,
+  },
+  gradientBtn: {
+    paddingVertical: 13,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginBottom: 10,
   },
 });
 

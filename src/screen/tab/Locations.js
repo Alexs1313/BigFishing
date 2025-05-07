@@ -7,31 +7,58 @@ import {
   View,
 } from 'react-native';
 import Layout from '../../components/Layout';
-import {tips} from '../../data/tips';
 import {useEffect, useState} from 'react';
 import {useStore} from '../../store/context';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {Swipeable} from 'react-native-gesture-handler';
+import SegmentedControl from 'react-native-segmented-control-2';
 
 const Locations = () => {
-  const [isOpenEnvelope, setIsOpenEnvelope] = useState(false);
-  const {userData, getUserData, getUserNotes, userNotes, removeUserNote} =
-    useStore();
+  const [selecdedIdx, setSelectedIdx] = useState(0);
+  const {
+    userData,
+    getLocation,
+    getFishingData,
+    removeLocation,
+    removeFishingData,
+    locations,
+    fishingData,
+  } = useStore();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
 
-  console.log('userNotes', userNotes);
+  function secondsToTime(e) {
+    const m = Math.floor((e % 3600) / 60)
+        .toString()
+        .padStart(2, '0'),
+      s = Math.floor(e % 60)
+        .toString()
+        .padStart(2, '0');
+
+    return `${m}:${s}`;
+  }
+
+  console.log(locations, fishingData);
 
   useEffect(() => {
-    getUserData();
-    getUserNotes();
+    getLocation(), getFishingData();
   }, [isFocused]);
 
-  const deleteNote = itemId => (
+  const deleteLocation = itemId => (
     <View style={{justifyContent: 'center'}}>
       <TouchableOpacity
         style={styles.deleteButton}
-        onPress={() => removeUserNote(itemId)}>
+        onPress={() => removeLocation(itemId)}>
+        <Image source={require('../../assets/icons/delete.png')} />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const deleteFisshingCard = itemId => (
+    <View style={{justifyContent: 'center'}}>
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() => removeFishingData(itemId)}>
         <Image source={require('../../assets/icons/delete.png')} />
       </TouchableOpacity>
     </View>
@@ -43,7 +70,7 @@ const Locations = () => {
         <View style={{marginHorizontal: 16, marginTop: 80}}>
           <View style={styles.headerContainer}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              {userData.image === '' ? (
+              {userData.image === '' || userData.length === 0 ? (
                 <View style={styles.userImage}></View>
               ) : (
                 <Image
@@ -54,7 +81,7 @@ const Locations = () => {
               <View style={{marginLeft: 10}}>
                 <Text style={styles.welcomeText}>Welcome back,</Text>
 
-                {userData.nickname === '' ? (
+                {userData.nickname === '' || userData.length === 0 ? (
                   <Text style={styles.usernameText}>User</Text>
                 ) : (
                   <Text style={styles.usernameText}>{userData.nickname}</Text>
@@ -77,29 +104,162 @@ const Locations = () => {
             <Text style={styles.addBtnText}>Open map</Text>
             <Image source={require('../../assets/icons/map.png')} />
           </TouchableOpacity>
+
+          <SegmentedControl
+            style={{
+              marginTop: 19,
+              backgroundColor: 'rgba(255, 255, 255, 0.15)',
+              borderRadius: 7,
+              height: 35,
+              width: '100%',
+            }}
+            activeTabColor="#F46C5C"
+            activeTextColor="#FFFFFF"
+            textStyle={{color: '#fff'}}
+            tabs={['Locations', 'Fishing sessions']}
+            selectedTabStyle={{
+              borderRadius: 7,
+              borderColor: 'rgba(0, 0, 0, 0.04)',
+              borderWidth: 0.5,
+              textShadowColor: 'rgba(0, 0, 0, 0.04)',
+              textShadowOffset: {width: 0, height: 3},
+              textShadowRadius: 8,
+            }}
+            onChange={index => setSelectedIdx(index)}
+          />
         </View>
         <View style={{paddingRight: 16, marginTop: 32, marginBottom: 110}}>
-          {userNotes.map(note => (
-            <Swipeable
-              renderRightActions={() => deleteNote(note.id)}
-              key={note.id}>
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() => navigation.navigate('ChickenCard', note)}
-                style={styles.itemContainer}
-                key={note.id}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}>
-                  <Text style={styles.titleText}>{note.title}</Text>
-                  <Text style={styles.dateText}>{note.date}</Text>
+          {selecdedIdx === 0 ? (
+            <View>
+              {locations.length === 0 ? (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('Map')}
+                  activeOpacity={0.7}
+                  style={{alignItems: 'center', marginTop: 80}}>
+                  <Text style={styles.goToMapText}>Go to the map </Text>
+                </TouchableOpacity>
+              ) : (
+                <View>
+                  {locations.map(location => (
+                    <Swipeable
+                      renderRightActions={() => deleteLocation(location.id)}
+                      key={location.id}>
+                      <TouchableOpacity
+                        activeOpacity={0.9}
+                        onPress={() =>
+                          navigation.navigate('ChickenCard', location)
+                        }
+                        style={styles.itemContainer}
+                        key={location.id}>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                          }}>
+                          <Text style={styles.titleText}>
+                            {location.spotName}
+                          </Text>
+                          <Text style={styles.dateText}>{location.date}</Text>
+                        </View>
+                        <Text style={styles.secondaryText}>
+                          🌊 {location.waterType}
+                        </Text>
+                        <Text style={styles.secondaryText}>
+                          🐟 {location.fishType}
+                        </Text>
+                        <Text style={styles.notesText}>{location.notes}</Text>
+                      </TouchableOpacity>
+                    </Swipeable>
+                  ))}
                 </View>
-                <Text style={styles.secondaryText}>{note.description}</Text>
-              </TouchableOpacity>
-            </Swipeable>
-          ))}
+              )}
+            </View>
+          ) : (
+            <View>
+              <View>
+                {fishingData.length === 0 ? (
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('Map')}
+                    activeOpacity={0.7}
+                    style={{
+                      alignItems: 'center',
+                      marginTop: 80,
+                      marginBottom: 20,
+                    }}>
+                    <Text style={styles.goToMapText}>Go to the map </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <View>
+                    {fishingData.map(item => (
+                      <Swipeable
+                        renderRightActions={() => deleteFisshingCard(item.id)}
+                        key={item.id}>
+                        <TouchableOpacity
+                          activeOpacity={0.9}
+                          onPress={() =>
+                            navigation.navigate('ChickenCard', item)
+                          }
+                          style={styles.itemContainer}
+                          key={item.id}>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              justifyContent: 'space-between',
+                            }}>
+                            <Text style={styles.titleText}>
+                              {item.spotName}
+                            </Text>
+                            <Text style={styles.dateText}>{item.date}</Text>
+                          </View>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              justifyContent: 'space-between',
+                            }}>
+                            <Text
+                              style={[styles.titleText, {color: '#F46C5C'}]}>
+                              Time of session :
+                            </Text>
+                            <Text style={[styles.dateText, {color: '#F46C5C'}]}>
+                              {secondsToTime(item.time)}
+                            </Text>
+                          </View>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              gap: 20,
+                            }}>
+                            <Text style={styles.notesText}>
+                              ⚖️ {item.weight}
+                            </Text>
+                            <Text style={styles.notesText}>{item.bait} 🪱</Text>
+                            <Text style={styles.notesText}>
+                              🐟 {item.fishType}
+                            </Text>
+                          </View>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              gap: 20,
+                            }}>
+                            <Text style={styles.notesText}>
+                              🎯 {item.method}
+                            </Text>
+                            <Text style={styles.notesText}>
+                              ☀️🌧️ {item.weather}
+                            </Text>
+                          </View>
+                          <Text style={styles.secondaryText}>{item.notes}</Text>
+                        </TouchableOpacity>
+                      </Swipeable>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
         </View>
       </ScrollView>
     </Layout>
@@ -127,6 +287,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: '#fff',
   },
+  goToMapText: {fontSize: 24, fontWeight: '500', opacity: 0.4, color: '#fff'},
   addBtnContainer: {
     paddingVertical: 13,
     paddingHorizontal: 24,
@@ -161,18 +322,21 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: '#fff',
+    marginBottom: 4,
   },
   secondaryText: {
     fontSize: 14,
     fontWeight: '400',
     color: '#fff',
     opacity: 0.8,
+    marginTop: 6,
   },
   dateText: {
     fontSize: 12,
     fontWeight: '400',
     color: '#fff',
   },
+  notesText: {fontSize: 14, fontWeight: '600', color: '#fff', marginTop: 12},
   deleteButton: {
     backgroundColor: 'red',
     justifyContent: 'center',

@@ -7,20 +7,16 @@ import {
   View,
 } from 'react-native';
 import Layout from '../../components/Layout';
-import {tips} from '../../data/tips';
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 import {useStore} from '../../store/context';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {Swipeable} from 'react-native-gesture-handler';
 
 const Notes = () => {
-  const [isOpenEnvelope, setIsOpenEnvelope] = useState(false);
   const {userData, getUserData, getUserNotes, userNotes, removeUserNote} =
     useStore();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
-
-  console.log('userNotes', userNotes);
 
   useEffect(() => {
     getUserData();
@@ -43,7 +39,7 @@ const Notes = () => {
         <View style={{marginHorizontal: 16, marginTop: 80}}>
           <View style={styles.headerContainer}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              {userData.image === '' ? (
+              {userData.image === '' || userData.length === 0 ? (
                 <View style={styles.userImage}></View>
               ) : (
                 <Image
@@ -54,7 +50,7 @@ const Notes = () => {
               <View style={{marginLeft: 10}}>
                 <Text style={styles.welcomeText}>Welcome back,</Text>
 
-                {userData.nickname === '' ? (
+                {userData.nickname === '' || userData.length === 0 ? (
                   <Text style={styles.usernameText}>User</Text>
                 ) : (
                   <Text style={styles.usernameText}>{userData.nickname}</Text>

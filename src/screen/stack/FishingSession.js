@@ -27,28 +27,32 @@ month = month < 10 ? '0' + month : month;
 
 const formattedDate = `${day}.${month}.${year}`;
 
-const MarkLocation = () => {
+const FishingSession = ({route}) => {
+  const time = route.params;
   const [saved, setSaved] = useState(false);
-  const {saveLocation, setCurrentLocation, isEnabledNotifications} = useStore();
-  const [locationData, setlocationData] = useState({
+  const {saveFishingData, isEnabledNotifications} = useStore();
+  const [fishingData, setFishingData] = useState({
     id: Date.now(),
     spotName: '',
-    waterType: '',
     fishType: '',
+    weight: '',
+    bait: '',
+    method: '',
+    weather: '',
     notes: '',
     date: formattedDate,
+    time,
   });
   const navigation = useNavigation();
 
-  console.log('location', locationData);
+  console.log('route', time);
 
   const handleSaveData = () => {
-    saveLocation(locationData);
+    saveFishingData(fishingData);
     setSaved(true);
-    setCurrentLocation(locationData);
     if (isEnabledNotifications) {
       Toast.show({
-        text1: 'Location created successfully!',
+        text1: 'Fishing created successfully!',
       });
     }
     setTimeout(() => {
@@ -56,14 +60,18 @@ const MarkLocation = () => {
     }, 300);
   };
 
-  const {spotName, waterType, fishType, notes} = locationData;
+  const {spotName, weight, fishType, bait, method, weather, notes} =
+    fishingData;
 
   const handleGoBack = () => {
     if (
       spotName !== '' ||
-      fishType !== '' ||
+      weight !== '' ||
+      bait !== '' ||
       notes !== '' ||
-      (waterType !== '' && !saved)
+      fishType !== '' ||
+      method !== '' ||
+      (notes !== '' && !saved)
     ) {
       Alert.alert(
         'Wait! You’ve Got Unsaved Changes',
@@ -88,8 +96,11 @@ const MarkLocation = () => {
 
   const isDisabled =
     spotName.trim() === '' ||
-    waterType.trim() === '' ||
     fishType.trim() === '' ||
+    weight.trim() === '' ||
+    bait.trim() === '' ||
+    method.trim() === '' ||
+    weather.trim() === '' ||
     notes.trim() === '';
 
   return (
@@ -112,47 +123,75 @@ const MarkLocation = () => {
         <View style={{marginHorizontal: 16, marginTop: 24}}>
           <View
             activeOpacity={0.7}
-            style={styles.addBtnContainer}
-            onPress={() => navigation.navigate('MarkLocation')}>
-            <Text style={styles.addBtnText}>Mark location</Text>
-            <Image source={require('../../assets/icons/marker.png')} />
+            style={[styles.addBtnContainer, {backgroundColor: '#34C759'}]}
+            onPress={() => navigation.navigate('FishingSession')}>
+            <Text style={styles.addBtnText}>Catch</Text>
+
+            <Image source={require('../../assets/icons/add.png')} />
           </View>
           <Text style={styles.sectionTitle}>Name the Spot ✏️</Text>
           <TextInput
             style={styles.input}
             maxLength={20}
-            value={locationData.spotName}
+            value={fishingData.spotName}
             onChangeText={value =>
-              setlocationData(prev => ({...prev, spotName: value}))
+              setFishingData(prev => ({...prev, spotName: value}))
             }
           />
-          <Text style={styles.sectionTitle}>Water Type 🌊</Text>
+          <Text style={styles.sectionTitle}>Fish Type 🐟</Text>
           <TextInput
             style={styles.input}
             maxLength={20}
-            value={locationData.waterType}
+            value={fishingData.fishType}
             onChangeText={value =>
-              setlocationData(prev => ({...prev, waterType: value}))
+              setFishingData(prev => ({...prev, fishType: value}))
             }
           />
 
-          <Text style={styles.sectionTitle}>Fish Type Expected 🐟 </Text>
+          <Text style={styles.sectionTitle}>Weight ⚖️ </Text>
           <TextInput
             style={styles.input}
             maxLength={20}
-            value={locationData.fishType}
+            value={fishingData.weight}
             onChangeText={value =>
-              setlocationData(prev => ({...prev, fishType: value}))
+              setFishingData(prev => ({...prev, weight: value}))
             }
           />
 
+          <Text style={styles.sectionTitle}>Bait Used 🪱</Text>
+          <TextInput
+            style={styles.input}
+            maxLength={20}
+            value={fishingData.bait}
+            onChangeText={value =>
+              setFishingData(prev => ({...prev, bait: value}))
+            }
+          />
+          <Text style={styles.sectionTitle}>Fishing Method 🎯</Text>
+          <TextInput
+            style={styles.input}
+            maxLength={20}
+            value={fishingData.method}
+            onChangeText={value =>
+              setFishingData(prev => ({...prev, method: value}))
+            }
+          />
+          <Text style={styles.sectionTitle}>Weather Conditions ☀️🌧️</Text>
+          <TextInput
+            style={styles.input}
+            maxLength={20}
+            value={fishingData.weather}
+            onChangeText={value =>
+              setFishingData(prev => ({...prev, weather: value}))
+            }
+          />
           <Text style={styles.sectionTitle}>Personal Notes 📝</Text>
           <TextInput
-            style={[styles.input, {marginBottom: 60}]}
+            style={[styles.input, {marginBottom: 120}]}
             maxLength={20}
-            value={locationData.notes}
+            value={fishingData.notes}
             onChangeText={value =>
-              setlocationData(prev => ({...prev, notes: value}))
+              setFishingData(prev => ({...prev, notes: value}))
             }
           />
         </View>
@@ -165,6 +204,7 @@ const MarkLocation = () => {
           style={{
             bottom: 40,
             width: '100%',
+            position: 'absolute',
           }}>
           <LinearGradient
             colors={
@@ -180,14 +220,6 @@ const MarkLocation = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1},
-  title: {
-    fontSize: 32,
-    fontWeight: '400',
-    fontFamily: 'Chango-Regular',
-    textAlign: 'center',
-  },
-
   headerContainer: {
     paddingTop: 80,
     paddingLeft: 16,
@@ -199,12 +231,6 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: '#FAC40C',
     marginLeft: 6,
-  },
-  userImgContainer: {
-    width: 141,
-    height: 141,
-    backgroundColor: '#3F3782',
-    borderRadius: 110,
   },
   addBtnText: {
     fontSize: 18,
@@ -254,4 +280,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MarkLocation;
+export default FishingSession;

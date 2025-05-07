@@ -7,21 +7,22 @@ import CreateNote from '../screen/stack/CreateNote';
 import Quiz from '../screen/stack/Quiz';
 import Map from '../screen/stack/Map';
 import MarkLocation from '../screen/stack/MarkLocation';
+import FishingSession from '../screen/stack/FishingSession';
 
 const Stack = createStackNavigator();
 
 const StackNav = () => {
   return (
     <Stack.Navigator screenOptions={{headerShown: false}}>
-      {/* <Stack.Screen name="Onboard" component={Onboard} />
-      <Stack.Screen name="CreateProfile" component={CreateProfile} /> */}
-
+      <Stack.Screen name="Onboard" component={Onboard} />
+      <Stack.Screen name="CreateProfile" component={CreateProfile} />
       <Stack.Screen name="TabNav" component={TabNav} />
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
       <Stack.Screen name="CreateNote" component={CreateNote} />
       <Stack.Screen name="Quiz" component={Quiz} />
       <Stack.Screen name="Map" component={Map} />
       <Stack.Screen name="MarkLocation" component={MarkLocation} />
+      <Stack.Screen name="FishingSession" component={FishingSession} />
     </Stack.Navigator>
   );
 };

@@ -1,6 +1,5 @@
 import {
   Image,
-  ImageBackground,
   ScrollView,
   StyleSheet,
   Switch,
@@ -19,10 +18,15 @@ import {useStore} from '../../store/context';
 const SettingsScreen = () => {
   const [changeButton, setChangeButton] = useState(false);
   const [changePhoto, setChangePhoto] = useState(false);
-  const [isEnabledMusic, setIsEnabledMusic] = useState(false);
-  const [isEnabledNotifications, setIsEnabledMusicNotifications] =
-    useState(false);
-  const {saveUserData, userData, getUserData} = useStore();
+
+  const {
+    saveUserData,
+    userData,
+    getUserData,
+    isEnabledNotifications,
+    setIsEnabledNotifications,
+    resetApp,
+  } = useStore();
 
   const [user, setUser] = useState({
     id: Date.now(),
@@ -31,9 +35,8 @@ const SettingsScreen = () => {
   });
   const navigation = useNavigation();
 
-  const toggleMusic = () => setIsEnabledMusic(previousState => !previousState);
   const toggleNotifications = () =>
-    setIsEnabledMusicNotifications(previousState => !previousState);
+    setIsEnabledNotifications(previousState => !previousState);
 
   useEffect(() => {
     getUserData();
@@ -62,8 +65,6 @@ const SettingsScreen = () => {
     setChangeButton(true);
   };
 
-  const isDisabled = userData.nickname === '' || userData.image === '';
-
   return (
     <Layout>
       <ScrollView style={{}}>
@@ -91,48 +92,50 @@ const SettingsScreen = () => {
             alignItems: 'center',
             marginBottom: 36,
           }}>
-          {userData.image !== '' && (
-            <View>
-              <Image
-                source={{uri: user.image}}
-                style={{width: 141, height: 141, borderRadius: 99}}
-              />
-              <TouchableOpacity
-                onPress={() => imagePicker()}
-                activeOpacity={0.7}
-                style={styles.addBtnContainer}>
-                <Image source={require('../../assets/icons/add.png')} />
-              </TouchableOpacity>
-            </View>
-          )}
-          {userData.image === '' && (
-            <View>
-              {changePhoto ? (
-                <View>
-                  <Image
-                    source={{uri: user.image}}
-                    style={{width: 141, height: 141, borderRadius: 99}}
-                  />
-                  <TouchableOpacity
-                    onPress={() => imagePicker()}
-                    activeOpacity={0.7}
-                    style={styles.addBtnContainer}>
-                    <Image source={require('../../assets/icons/add.png')} />
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <View>
-                  <View style={styles.userImgContainer}></View>
-                  <TouchableOpacity
-                    onPress={() => imagePicker()}
-                    activeOpacity={0.7}
-                    style={styles.addBtnContainer}>
-                    <Image source={require('../../assets/icons/add.png')} />
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          )}
+          {userData.image !== '' ||
+            (userData.length === 0 && (
+              <View>
+                <Image
+                  source={{uri: user.image}}
+                  style={{width: 141, height: 141, borderRadius: 99}}
+                />
+                <TouchableOpacity
+                  onPress={() => imagePicker()}
+                  activeOpacity={0.7}
+                  style={styles.addBtnContainer}>
+                  <Image source={require('../../assets/icons/add.png')} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          {userData.image === '' ||
+            (userData.length === 0 && (
+              <View>
+                {changePhoto ? (
+                  <View>
+                    <Image
+                      source={{uri: user.image}}
+                      style={{width: 141, height: 141, borderRadius: 99}}
+                    />
+                    <TouchableOpacity
+                      onPress={() => imagePicker()}
+                      activeOpacity={0.7}
+                      style={styles.addBtnContainer}>
+                      <Image source={require('../../assets/icons/add.png')} />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View>
+                    <View style={styles.userImgContainer}></View>
+                    <TouchableOpacity
+                      onPress={() => imagePicker()}
+                      activeOpacity={0.7}
+                      style={styles.addBtnContainer}>
+                      <Image source={require('../../assets/icons/add.png')} />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            ))}
         </View>
         <View style={{marginHorizontal: 16, marginTop: 35}}>
           <Text style={styles.sectionTitle}>Nickname</Text>
@@ -170,16 +173,6 @@ const SettingsScreen = () => {
 
         <View style={{marginHorizontal: 16, marginTop: 35}}>
           <View style={styles.settingsWrap}>
-            <Text style={styles.settingsText}>Music</Text>
-            <Switch
-              onValueChange={toggleMusic}
-              value={isEnabledMusic}
-              style={{transform: [{scaleX: 1.4}, {scaleY: 1.4}]}}
-              trackColor={{true: '#FBE30A', false: 'grey'}}
-              thumbColor={'#fff'}
-            />
-          </View>
-          <View style={styles.settingsWrap}>
             <Text style={styles.settingsText}>Notifications</Text>
             <Switch
               onValueChange={toggleNotifications}
@@ -191,7 +184,7 @@ const SettingsScreen = () => {
           </View>
           <View style={styles.settingsWrap}>
             <Text style={styles.settingsText}>Reset the App</Text>
-            <TouchableOpacity>
+            <TouchableOpacity activeOpacity={0.7} onPress={() => resetApp()}>
               <Image source={require('../../assets/icons/reset.png')} />
             </TouchableOpacity>
           </View>
